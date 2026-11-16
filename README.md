@@ -1,100 +1,81 @@
-# LaborIA - Outils
+# LaborIA - Bac à sable des outils
 
-Compilations d'outils développés pour le LaborIA.
+Ce dépôt contient le site statique qui rassemble des outils interactifs développés dans le cadre des travaux du LaborIA autour de l'intelligence artificielle et du travail. Il s'agit du bac à sable des outils, et non du site institutionnel du LaborIA : [laboria.ai](https://www.laboria.ai/).
 
-## Installation
+## Outils
+
+Les outils actuellement proposés sur la page d'accueil sont :
+
+- **Autoportrait : l'IA dans mon quotidien** - un autodiagnostic individuel (environ 30 à 45 minutes) pour examiner ses usages de l'IA générative, leurs effets sur le travail et les questions qu'ils soulèvent. Le parcours comprend trois parties et un bilan.
+- **Le travail réel de l'IA** - un jeu de rôle (environ 30 à 45 minutes, seul ou en binôme) pour décrire trois tâches, mesurer la place de l'IA et réfléchir aux transformations du travail réel.
+
+Le parcours **Mon métier se transforme** est toujours présent dans le dépôt et inclus dans le build, mais il n'est pas proposé sur la page d'accueil car obsolète.
+
+## Prérequis et installation
+
+Le projet utilise Vite et nécessite Node.js (la publication automatique utilise Node.js 22).
 
 ```bash
 npm install
 ```
 
-## Développement local
+## Développement
 
 ```bash
 npm run dev
 ```
 
-Ouvre le lien affiché (en général <http://localhost:5173>).
+Ouvrez l'adresse locale affichée par Vite, généralement <http://localhost:5173>.
 
-## Build de production
+Pour vérifier le build de production en local :
 
 ```bash
 npm run build
+npm run preview
 ```
 
-Génère le site statique dans `dist/`.
+Le site généré se trouve dans `dist/`.
 
-## Structure du projet
+## Données utilisateurs
 
-```sh
-├── index.html              → page d'accueil / notice d'utilisation
-├── taches.html              → liste des tâches enregistrées (localStorage)
-├── arbre.html                → questionnaire / arbre de décision
-├── exploration.html          → étape 3 : pistes d'amélioration par colonne
+Les réponses des outils Autoportrait et Travail réel sont enregistrées dans le `localStorage` du navigateur. Elles ne sont pas envoyées à un serveur. Les deux outils permettent d'exporter une sauvegarde et de la réimporter depuis leur notice ; l'Autoportrait propose également un récapitulatif imprimable et un export texte.
+
+## Structure du dépôt
+
+```text
+.
+├── index.html                    # Accueil et registre des outils affichés
+├── package.json                  # Dépendances et commandes npm
+├── vite.config.js                # Entrées HTML du build multi-pages
 ├── public/
-│   ├── assets/logo/          → logos SVG (voir ci-dessous)
-│   └── data/
-│       └── arbre_decision.csv  → LE FICHIER À MODIFIER pour changer l'arbre
-└── src/
-    ├── css/style.css
-    └── js/
-        ├── storage.js       → gestion des tâches en localStorage
-        ├── csv.js           → parsing du CSV (PapaParse)
-        ├── taches.js
-        ├── arbre.js
-        └── exploration.js
+│   ├── assets/                   # Logos et illustrations
+│   ├── data/
+│   │   └── arbre_decision.csv    # Contenu de l'arbre de décision
+│   └── CNAME                     # Domaine personnalisé du site publié
+├── src/
+│   ├── css/style.css             # Styles communs
+│   └── js/
+│       ├── home.js, tools.js     # Page d'accueil et registre des outils
+│       ├── autoportrait/         # Logique de l'autodiagnostic
+│       ├── travail-reel/         # Logique du jeu de rôle
+│       └── mon-metier/           # Logique de l'arbre de décision (archivé)
+├── tools/
+│   ├── autoportrait-ia/          # Notice, parties 1 à 3 et ressources
+│   ├── travail-reel-ia/          # Notice, étapes 1 à 4 et ressources
+│   └── mon-metier-se-transforme/ # Présentation, tâches, arbre et exploration
+└── .github/workflows/deploy.yml  # Build et déploiement GitHub Pages
 ```
 
-## Modifier l'arbre de décision (pour les non-développeurs)
+## Déploiement
 
-Toute la logique de l'arbre est dans **`public/data/arbre_decision.csv`**.
-Ce fichier peut être édité directement dans GitHub (mode tableau) ou dans
-Excel/Google Sheets puis ré-exporté en CSV.
+Le workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) construit et publie le site sur GitHub Pages à chaque push sur `main`. Il peut aussi être lancé manuellement depuis l'onglet **Actions**.
 
-Colonnes :
+Dans **Settings → Pages**, configurez **Source : GitHub Actions**. Le domaine personnalisé est défini par `public/CNAME`, que Vite copie dans `dist/`.
 
-- `id` : identifiant unique de la case (ne pas dupliquer)
-- `type` : `question` (avec des boutons) ou `resultat` (fin de parcours)
-- `texte` : texte affiché
-- `categorie` : uniquement pour les lignes `resultat`. Valeurs possibles :
-  - `ia_utile` → suggère la colonne "IA utile"
-  - `ia_insatisfaisante` → suggère la colonne "IA ne donne pas satisfaction"
-  - `non_concernee` → sort du parcours sans classification
-  - laisser vide pour les lignes `question`
-- `boutonN_label` / `boutonN_suivant` (N de 1 à 4) : le texte du bouton et
-  l'`id` de la case suivante. Laisser vide si moins de 4 boutons sont utilisés.
+Une publication manuelle est aussi disponible avec :
 
-⚠️ Chaque `boutonN_suivant` doit correspondre à un `id` existant ailleurs
-dans le fichier, sinon le parcours affichera une erreur à cette étape.
+```bash
+npm run deploy
+```
 
-## Logos et charte graphique
-
-Remplace les deux fichiers placeholders par les vrais SVG fournis par
-LaborIA, en gardant exactement les mêmes noms de fichiers :
-
-- `public/assets/logo/LaborIA_transparent.svg` (logo complet avec texte)
-- `public/assets/logo/LaborIA_cerveau_transparent.svg` (icône seule, utilisée en favicon)
-
-Les couleurs de la charte sont définies en variables CSS dans
-`src/css/style.css` (section `:root`).
-
-## Publier sur GitHub Pages
-
-Le déploiement est automatique via `.github/workflows/deploy.yml` : chaque push
-sur `main` construit le site (`npm run build`) et le publie.
-
-1. Dans **Settings → Pages**, choisir **Source : GitHub Actions** (une seule fois).
-2. Pousser sur `main`. Le suivi se fait dans l'onglet **Actions**. Le workflow
-   peut aussi être lancé à la main (**Run workflow**).
-
-Alternative manuelle (source « Deploy from a branch », branche `gh-pages`) :
-`npm run deploy`.
-
-Le domaine personnalisé `laboria.datactivist.coop` est conservé par le fichier
-`public/CNAME`, que Vite copie à la racine de `dist/` à chaque build. Ne placez
-pas le seul fichier `CNAME` à la racine du dépôt : il ne serait pas inclus dans
-la publication de `dist/`.
-
-Le `base: './'` dans `vite.config.js` permet aux chemins des ressources de
-fonctionner à la racine du domaine personnalisé comme dans un sous-dossier de
-projet.
+Cette commande construit le site puis publie `dist/` avec `gh-pages`.
